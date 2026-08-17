@@ -1,0 +1,23 @@
+# fastestai.com
+
+User-agent: *
+Allow: /
+
+# The contact address is assembled by this script at runtime. Keeping it out of
+# the crawl budget means rendering crawlers never resolve a plaintext address.
+Disallow: /assets/app.js
+
+# Known address harvesters get nothing at all.
+User-agent: EmailCollector
+Disallow: /
+
+User-agent: EmailSiphon
+Disallow: /
+
+User-agent: EmailWolf
+Disallow: /
+
+User-agent: ExtractorPro
+Disallow: /
+
+Sitemap: https://fastestai.com/sitemap.xml
