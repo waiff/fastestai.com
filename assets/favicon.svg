@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="fastestAI">
+  <title>fastestAI</title>
+  <rect width="32" height="32" rx="7" fill="#0A0A0A"/>
+  <!--
+    A forward-sheared 'F' leaning into its own motion, with a trail left behind it.
+    The glyph is one path (no seams where the arms meet the stem); skewX(-12) tilts
+    it, and translate(1.9) re-centres the sheared bounding box inside the tile.
+  -->
+  <g transform="translate(1.9 0) skewX(-12)">
+    <path d="M11 6 H24 V10 H15 V13 H21.5 V17 H15 V26 H11 Z" fill="#FAFAFA"/>
+    <rect x="4.5" y="13" width="3" height="4" fill="#FAFAFA" opacity="0.34"/>
+  </g>
+</svg>

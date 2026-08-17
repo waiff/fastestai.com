@@ -1,0 +1,86 @@
+# fastestai.com — Apache/LiteSpeed configuration (Hostinger shared hosting).
+#
+# GitHub Pages provided HTTPS, canonical redirects, compression and the 404
+# document implicitly. On shared hosting each has to be stated.
+#
+# This site is deployed via hPanel Git deployment, which checks the whole
+# repository out into public_html — including .git. The deny rules below run
+# first, and are the difference between a landing page and a public source
+# history.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # ── Deny repository metadata ──────────────────────────────────────────────
+  # Any path with a dot-segment (.git/, .github/, .gitignore) is refused before
+  # any other rule can rewrite or redirect it. FilesMatch alone is not enough:
+  # it does not match directories, and .git/ is a directory.
+  RewriteRule (^|/)\.(?!well-known/) - [F,L]
+
+  # ── Canonical origin ──────────────────────────────────────────────────────
+  # Force HTTPS and strip the www. prefix so the served URL always matches the
+  # <link rel="canonical"> in index.html.
+
+  # %{HTTPS} is unreliable behind Hostinger's proxy, so check the forwarded
+  # header too.
+  RewriteCond %{HTTPS} !=on [OR]
+  RewriteCond %{HTTP:X-Forwarded-Proto} =http
+  RewriteRule ^ https://fastestai.com%{REQUEST_URI} [R=301,L]
+
+  # www → apex.
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+</IfModule>
+
+# Belt and braces for hosts where mod_rewrite is unavailable.
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^(README\.md)$">
+  Require all denied
+</FilesMatch>
+
+Options -Indexes
+
+# ── Error document ──────────────────────────────────────────────────────────
+ErrorDocument 404 /404.html
+
+# ── Compression ─────────────────────────────────────────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ── Caching ─────────────────────────────────────────────────────────────────
+# Assets are not fingerprinted, so keep the windows short enough that a
+# redeploy is picked up promptly.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html                 "access plus 10 minutes"
+  ExpiresByType text/css                  "access plus 1 day"
+  ExpiresByType application/javascript    "access plus 1 day"
+  ExpiresByType image/svg+xml             "access plus 7 days"
+</IfModule>
+
+# ── Headers ─────────────────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "DENY"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+  # HSTS. Enable only once HTTPS is confirmed working on the apex and www —
+  # browsers cache this and it cannot be undone quickly.
+  # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+  # Content Security Policy, enumerated from what index.html actually loads:
+  #   inline <script>/<style>      → 'unsafe-inline'
+  #   assets/app.js, favicon       → 'self'
+  #   cdn.tailwindcss.com          → script-src (injects styles at runtime)
+  #   fonts.googleapis.com         → style-src
+  #   fonts.gstatic.com            → font-src
+  # There is no form, frame, or network call on the page, so connect-src and
+  # form-action stay closed.
+  Header always set Content-Security-Policy "default-src 'none'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+</IfModule>
